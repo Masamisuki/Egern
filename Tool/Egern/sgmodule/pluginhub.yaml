@@ -1,14 +1,14 @@
-name: 插件中心支持Egern(全能版)
-description: 支持可莉、LoonLab等插件中心给Egern使用; 使用前请先添加ScriptHub模块.
+name: 插件中心支持Egern(全能适配版)
+description: 支持可莉、LoonLab插件中心给Egern使用; 使用前请先添加ScriptHub模块.
 author: 原作者@iKeLee, 优化适配@Gemini
 
 body_rewrites:
 - response_regex:
-    # 匹配目标网站的 list.json 接口
+    # 匹配目标网站的列表接口
     match: https?://(pluginhub\.kelee\.one|loonlab\.103516\.xyz)/.*list\.json
-    # 这里的修改是关键：匹配所有以 https 开头的 .lpx 插件链接
-    find: loon://import\?plugin=(https://[^\s"'<>]+/(.+?)\.lpx)
-    # 转换为 Egern 能够识别的 ScriptHub 转换链接
+    # 这里的正则可以兼容“有loon协议头”和“纯https链接”两种情况
+    find: (?:loon://import\?plugin=)?(https?://[^\s"'<>]+/(.+?)\.lpx)
+    # 统一转换为 Egern 导入链接
     replace: egern:///modules/new?url=http://script.hub/file/_start_/$1/_end_/$2.sgmodule%3Ftype%3Dloon-plugin%26target%3Dsurge-module%26del%3Dtrue%26jqEnabled%3Dtrue%26pm%3D.%26sni%3D.
 
 mitm:
