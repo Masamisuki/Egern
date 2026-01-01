@@ -1,18 +1,14 @@
-name: 插件中心支持Egern (多仓库版)
-description: 支持可莉及第三方插件仓库给Egern使用；非Loon用户切勿反馈插件任何问题；使用前请先添加ScriptHub模块。
-author: 原作者@iKeLee, 修改@Gemini
+name: 可莉插件中心支持Egern
+description: 支持可莉插件中心的插件给Egern使用; 非Loon用户切勿反馈插件任何问题，尊重原创; 使用前请先添加ScriptHub模块. 插件中心网址 https://pluginhub.kelee.one
+author: 原作者@iKeLee
 
 body_rewrites:
 - response_regex:
-    # 匹配原版及新版仓库的列表 JSON 请求
-    match: ^https?://(pluginhub\.kelee\.one|loonlab\.103516\.xyz)/(?:Lpx_)?list\.json
-    # 匹配 loon:// 协议链接，捕获完整下载地址 ($1) 和 插件名 ($2)
-    find: loon://import\?plugin=(https?://(?:kelee\.one|loon\.103516\.xyz)/.*?/(.+?)\.lpx)
-    # 转换为 Egern 识别的 ScriptHub 转换链接
-    replace: egern:///modules/new?url=http://script.hub/file/_start_/$1/_end_/$2.sgmodule%3Ftype%3Dloon-plugin%26target%3Dsurge-module%26del%3Dtrue%26jqEnabled%3Dtrue%26pm%3D.%26sni%3D.
+    match: https://pluginhub\.kelee\.one/(?:Lpx_)?list\.json
+    find: loon://import\?plugin=(https://kelee\.one/Tool/Loon/Lpx/(.+?)\.lpx)
+    replace: egern:///modules/new?url=http://script.hub/file/_start_/$1/_end_/$2.sgmodule%3Ftype%3Dloon-plugin%26target%3Dsurge-module%26del%3Dtrue%26jqEnabled%3Dtrue%26pm%3D.%26sni%3D.
 
 mitm:
-  hostnames:
-    includes:
-      - pluginhub.kelee.one
-      - loonlab.103516.xyz/Plugin
+  hostnames:
+    includes:
+      - pluginhub.kelee.one
