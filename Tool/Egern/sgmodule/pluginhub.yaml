@@ -15,4 +15,4 @@ mitm:
   hostnames:
     includes:
       - pluginhub.kelee.one
-      - loonlab.103516.xyz
+      - loonlab.103516.xyz/Plugin
