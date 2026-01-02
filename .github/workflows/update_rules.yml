@@ -28,11 +28,8 @@ jobs:
           
           COUNT=$(wc -l < temp.txt)
           
-          # 构建最终文件
-          echo "# 规则名称: MyChinaDomain" > Tool/Egern/Rules/MyChinaDomain.list
-          echo "# 规则统计: $COUNT" >> Tool/Egern/Rules/MyChinaDomain.list
-          # 通过 printf 合并日期和空行，严格控制换行数量
-          printf "# 最后更新: $(date '+%Y-%m-%d %H:%M:%S') (GMT)\n\n" >> Tool/Egern/Rules/MyChinaDomain.list
+          # 核心修正：单次写入头信息，消除命令间隙产生的多余空行
+          printf "# 规则名称: MyChinaDomain\n# 规则统计: $COUNT\n# 最后更新: $(date '+%Y-%m-%d %H:%M:%S') (GMT)\n\n" > Tool/Egern/Rules/MyChinaDomain.list
           cat temp.txt >> Tool/Egern/Rules/MyChinaDomain.list
 
       - name: Git Push
@@ -40,5 +37,5 @@ jobs:
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Action"
           git add Tool/Egern/Rules/MyChinaDomain.list
-          git commit -m "优化排版格式(解决多余空行): $(date +%Y-%m-%d %H:%M:%S)" || exit 0
+          git commit -m "强制修正排版格式: $(date +%Y-%m-%d %H:%M:%S)" || exit 0
           git push
