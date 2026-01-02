@@ -16,23 +16,19 @@ jobs:
 
       - name: Download and Process
         run: |
-          # 1. 下载上游文件
           curl -sSL https://raw.githubusercontent.com/Accademia/Additional_Rule_For_Clash/refs/heads/main/GeositeCN/GeositeCN.yaml -o raw_cn.txt
           
-          # 2. 确保目标文件夹存在
           mkdir -p Tool/Egern/Rules/
           
-          # 3. 处理规则并临时存放在 temp.txt
           grep "DOMAIN" raw_cn.txt | \
           sed -E 's/^[[:space:]]*-?[[:space:]]*//g' | \
           sed 's/ //g' | \
           sed 's/#.*//g' | \
           sort -u > temp.txt
           
-          # 4. 获取规则总数
           COUNT=$(wc -l < temp.txt)
           
-          # 5. 构建最终文件：在统计和规则之间插入一个空行
+          # 核心修正：确保只输出一个空行
           echo "# 规则名称: MyChinaDomain" > Tool/Egern/Rules/MyChinaDomain.list
           echo "# 规则统计: $COUNT" >> Tool/Egern/Rules/MyChinaDomain.list
           echo "" >> Tool/Egern/Rules/MyChinaDomain.list
@@ -43,5 +39,5 @@ jobs:
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Action"
           git add Tool/Egern/Rules/MyChinaDomain.list
-          git commit -m "自动更新规则(添加空行及统计: $(date +%Y-%m-%d))" || exit 0
+          git commit -m "修正格式(移除多余空行): $(date +%Y-%m-%d)" || exit 0
           git push
