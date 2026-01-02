@@ -16,21 +16,26 @@ jobs:
 
       - name: Download and Process
         run: |
+          # 1. 下载上游文件
           curl -sSL https://raw.githubusercontent.com/Accademia/Additional_Rule_For_Clash/refs/heads/main/GeositeCN/GeositeCN.yaml -o raw_cn.txt
           
+          # 2. 确保目标文件夹存在
           mkdir -p Tool/Egern/Rules/
           
+          # 3. 处理规则：抓取、清洗、去重、排序
           grep "DOMAIN" raw_cn.txt | \
           sed -E 's/^[[:space:]]*-?[[:space:]]*//g' | \
           sed 's/ //g' | \
           sed 's/#.*//g' | \
           sort -u > temp.txt
           
+          # 4. 获取规则总数
           COUNT=$(wc -l < temp.txt)
           
-          # 核心修正：确保只输出一个空行
+          # 5. 构建最终文件：精准控制格式与强制更新日期
           echo "# 规则名称: MyChinaDomain" > Tool/Egern/Rules/MyChinaDomain.list
           echo "# 规则统计: $COUNT" >> Tool/Egern/Rules/MyChinaDomain.list
+          echo "# 最后更新: $(date '+%Y-%m-%d %H:%M:%S') (GMT)" >> Tool/Egern/Rules/MyChinaDomain.list
           echo "" >> Tool/Egern/Rules/MyChinaDomain.list
           cat temp.txt >> Tool/Egern/Rules/MyChinaDomain.list
 
@@ -39,5 +44,6 @@ jobs:
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Action"
           git add Tool/Egern/Rules/MyChinaDomain.list
-          git commit -m "修正格式(移除多余空行): $(date +%Y-%m-%d)" || exit 0
+          # 只要有变动就提交，没有变动则跳过
+          git commit -m "自动更新: $(date +%Y-%m-%d %H:%M:%S)" || exit 0
           git push
