@@ -1,9 +1,8 @@
 # 规则名称: Emby
-# 规则统计: 4
+# 规则统计: 3
 
 no_resolve: true
 domain_set:
   - link00.okemby.org
   - emby.nebula-media.org
   - m.mobaiemby.site
-  - danmuapisteven.vercel.app
