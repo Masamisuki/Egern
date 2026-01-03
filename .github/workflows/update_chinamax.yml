@@ -1,0 +1,46 @@
+name: Update ChinaMax Rules
+
+on:
+  schedule:
+    - cron: '0 5 * * *' # 每天北京时间下午 1 点自动运行
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout own repo
+        uses: actions/checkout@v3
+
+      - name: Download and Process
+        run: |
+          # 1. 下载 ChinaMax 上游文件
+          curl -sSL https://raw.githubusercontent.com/Accademia/Additional_Rule_For_Clash/refs/heads/main/ChinaMax/ChinaMax.yaml -o raw_chinamax.txt
+          
+          # 2. 确保目录存在
+          mkdir -p Tool/Egern/Rules/
+          
+          # 3. 处理规则：提取所有包含 DOMAIN 的行，清洗并去重
+          grep "DOMAIN" raw_chinamax.txt | \
+          sed -E 's/^[[:space:]]*-?[[:space:]]*//g' | \
+          sed 's/ //g' | \
+          sed 's/#.*//g' | \
+          sort -u > temp_max.txt
+          
+          # 4. 获取规则总数
+          COUNT=$(wc -l < temp_max.txt)
+          
+          # 5. 构建 .list 文件：精准控制头信息和空行
+          # 使用单条 printf 确保只有一个空行
+          printf "# 规则名称: ChinaMax\n# 规则统计: $COUNT\n# 最后更新: $(date '+%Y-%m-%d %H:%M:%S') (GMT)\n\n" > Tool/Egern/Rules/ChinaMax.list
+          cat temp_max.txt >> Tool/Egern/Rules/ChinaMax.list
+
+      - name: Git Push
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Action"
+          git add Tool/Egern/Rules/ChinaMax.list
+          git commit -m "自动更新 ChinaMax 规则: $(date +%Y-%m-%d %H:%M:%S)" || exit 0
+          git push
