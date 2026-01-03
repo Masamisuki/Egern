@@ -1,4 +1,4 @@
-name: Update CN Domain Rules
+name: Update GeositeCN Rules
 
 on:
   schedule:
@@ -16,26 +16,31 @@ jobs:
 
       - name: Download and Process
         run: |
+          # 1. 下载上游文件
           curl -sSL https://raw.githubusercontent.com/Accademia/Additional_Rule_For_Clash/refs/heads/main/GeositeCN/GeositeCN.yaml -o raw_cn.txt
           
+          # 2. 确保目标文件夹存在
           mkdir -p Tool/Egern/Rules/
           
+          # 3. 处理规则：提取 DOMAIN 类前缀并清洗去重
           grep "DOMAIN" raw_cn.txt | \
           sed -E 's/^[[:space:]]*-?[[:space:]]*//g' | \
           sed 's/ //g' | \
           sed 's/#.*//g' | \
           sort -u > temp.txt
           
+          # 4. 获取规则总数
           COUNT=$(wc -l < temp.txt)
           
-          # 核心修正：单次写入头信息，消除命令间隙产生的多余空行
-          printf "# 规则名称: MyChinaDomain\n# 规则统计: $COUNT\n# 最后更新: $(date '+%Y-%m-%d %H:%M:%S') (GMT)\n\n" > Tool/Egern/Rules/MyChinaDomain.list
-          cat temp.txt >> Tool/Egern/Rules/MyChinaDomain.list
+          # 5. 构建最终文件：文件名与表头同步修改为 GeositeCN
+          printf "# 规则名称: GeositeCN\n# 规则统计: $COUNT\n# 最后更新: $(date '+%Y-%m-%d %H:%M:%S') (GMT)\n\n" > Tool/Egern/Rules/GeositeCN.list
+          cat temp.txt >> Tool/Egern/Rules/GeositeCN.list
 
       - name: Git Push
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Action"
-          git add Tool/Egern/Rules/MyChinaDomain.list
-          git commit -m "强制修正排版格式: $(date +%Y-%m-%d %H:%M:%S)" || exit 0
+          # 添加新命名的文件
+          git add Tool/Egern/Rules/GeositeCN.list
+          git commit -m "自动更新 GeositeCN 规则: $(date +%Y-%m-%d %H:%M:%S)" || exit 0
           git push
