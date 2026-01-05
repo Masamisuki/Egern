@@ -1,6 +1,6 @@
 # 规则名称: GeositeCN
 # 规则统计: 4781
-# 最后更新: 2026-01-04 01:00:04 (GMT)
+# 最后更新: 2026-01-05 00:59:14 (GMT)
 
 
 DOMAIN-KEYWORD,-aweme-
@@ -16,6 +16,7 @@ DOMAIN-KEYWORD,bytedcdn.com
 DOMAIN-KEYWORD,byteimg.com
 DOMAIN-KEYWORD,byteimgc.com
 DOMAIN-KEYWORD,bytemaimg.com
+DOMAIN-KEYWORD,dcarvod.com
 DOMAIN-KEYWORD,douyin.com
 DOMAIN-KEYWORD,douyinact.com
 DOMAIN-KEYWORD,douyinact.net
@@ -1404,7 +1405,6 @@ DOMAIN-SUFFIX,dcarapi.com
 DOMAIN-SUFFIX,dcarimg.com
 DOMAIN-SUFFIX,dcarlive.com
 DOMAIN-SUFFIX,dcarstatic.com
-DOMAIN-SUFFIX,dcarvod.com
 DOMAIN-SUFFIX,dcdapp.com
 DOMAIN-SUFFIX,dcdkjx.com
 DOMAIN-SUFFIX,dcloudlive.com
