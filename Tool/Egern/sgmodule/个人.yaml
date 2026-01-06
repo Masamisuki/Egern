@@ -1,6 +1,5 @@
-name: My Direct Rules
-desc: 自定义域名策略选择
-category: General
+#!name: My Direct Rules
+#!desc: 自定义域名策略选择
 
 rules:
   # QQ音乐统计
