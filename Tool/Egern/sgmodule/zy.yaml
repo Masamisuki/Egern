@@ -1,12 +1,12 @@
-#!name: My Direct Rules
-#!desc: 自定义域名策略选择
+#!name=QQ音乐与EMBY分流补丁
+#!desc=QQ音乐统计强制直连，EMBY服务默认直连并支持手动切换策略。
 
-[Rule]
-  # QQ音乐统计
+rules:
+  # QQ音乐统计 (固定直连)
   - DOMAIN,stat.y.qq.com,DIRECT
   - DOMAIN,stat6.y.qq.com,DIRECT
-  
-  # EMBY服务
+
+  # EMBY服务 (默认显示为 DIRECT，点击模块设置可修改为其他策略组)
   - DOMAIN,link00.okemby.org,{{{DIRECT}}}
   - DOMAIN,m.mobaiemby.site,{{{DIRECT}}}
   - DOMAIN,emby.bangumi.ca,{{{DIRECT}}}
