@@ -1,7 +1,7 @@
 #!name: My Direct Rules
 #!desc: 自定义域名策略选择
 
-rules:
+[Rule]
   # QQ音乐统计
   - DOMAIN,stat.y.qq.com,DIRECT
   - DOMAIN,stat6.y.qq.com,DIRECT
