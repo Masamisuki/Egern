@@ -1,0 +1,13 @@
+name: My Direct Rules
+desc: desc:
+category: General
+
+rules:
+  # QQ音乐统计
+  - DOMAIN,stat.y.qq.com,DIRECT
+  - DOMAIN,stat6.y.qq.com,DIRECT
+  
+  # EMBY服务
+  - DOMAIN,link00.okemby.org,{{{DIRECT}}}
+  - DOMAIN,m.mobaiemby.site,{{{DIRECT}}}
+  - DOMAIN,emby.bangumi.ca,{{{DIRECT}}}
