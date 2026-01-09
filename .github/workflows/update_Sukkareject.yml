@@ -1,0 +1,53 @@
+name: Sync SukkaW Rules
+
+on:
+  workflow_dispatch: # 手动触发
+  schedule:
+    - cron: "0 0 * * *" # 每天 UTC 0点自动运行
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download and Process Rules
+        run: |
+          # 创建目标目录
+          mkdir -p Tool/Egern/Rules/
+
+          # 1. 处理 domainset/reject.conf -> reject.conf
+          curl -L "https://ruleset.skk.moe/List/domainset/reject.conf" -o "Tool/Egern/Rules/reject.conf"
+          
+          # 2. 处理 non_ip/reject.conf -> Reject_Non-IP.list (或您需要的后缀)
+          curl -L "https://ruleset.skk.moe/List/non_ip/reject.conf" -o "Tool/Egern/Rules/Reject_Non-IP"
+
+          # 定义需要清理的文件列表
+          targets=("Tool/Egern/Rules/reject.conf" "Tool/Egern/Rules/Reject_Non-IP")
+
+          # 执行删除指定域名的操作
+          for file in "${targets[@]}"; do
+            if [ -f "$file" ]; then
+              echo "Processing $file..."
+              sed -i -e '/this_ruleset_is_made_by_sukkaw.ruleset.skk.moe/d' "$file"
+              sed -i -e '/th1s_rule5et_1s_m4d3_by_5ukk4w_ruleset.skk.moe/d' "$file"
+              sed -i -e '/this_rule_set_is_made_by_sukkaw.skk.moe/d' "$file"
+              sed -i -e '/7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe/d' "$file"
+              
+              # 附加清理：如果源文件包含 "DOMAIN," 前缀，确保匹配准确
+              # 如果源文件只是纯域名列表，上面的 sed 依然有效
+            fi
+          done
+
+      - name: Push Changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add Tool/Egern/Rules/
+          if git diff --staged --quiet; then
+            echo "No changes detected."
+          else
+            git commit -m "Update Rules: Sync SukkaW reject rules $(date +'%Y-%m-%d %H:%M:%S')"
+            git push
+          fi
