@@ -18,10 +18,10 @@ jobs:
           mkdir -p Tool/Egern/Rules/
 
           # 1. 处理 domainset/reject.conf -> reject.conf
-          curl -L "https://ruleset.skk.moe/List/domainset/reject.conf" -o "Tool/Egern/Rules/Sukka's Ruleset-Reject_Base"
+          curl -L "https://ruleset.skk.moe/List/domainset/reject.conf" -o "Tool/Egern/Rules/Sukka's-Reject_Base"
           
           # 2. 处理 non_ip/reject.conf -> Reject_Non-IP.list (或您需要的后缀)
-          curl -L "https://ruleset.skk.moe/List/non_ip/reject.conf" -o "Tool/Egern/Rules/Sukka's Ruleset-Reject_Non-IP"
+          curl -L "https://ruleset.skk.moe/List/non_ip/reject.conf" -o "Tool/Egern/Rules/Sukka's-Reject_Non-IP"
 
           # 定义需要清理的文件列表
           targets=("Tool/Egern/Rules/reject.conf" "Tool/Egern/Rules/Reject_Non-IP")
