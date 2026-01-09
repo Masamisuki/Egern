@@ -1,39 +1,60 @@
-name: Update Egern Rules
+- name: Process Ads_SukkaW for Egern
+      run: |
+        # 1. 下载与合并 (下载 SukkaW 原始规则)
+        mkdir -p Tool-repo/Ruleset
+        urls=(
+            "https://ruleset.skk.moe/List/domainset/reject.conf"
+            "https://ruleset.skk.moe/List/non_ip/reject.conf"
+        )
+        > Tool-repo/Ruleset/Ads_SukkaW.list
+        for url in "${urls[@]}"; do
+            echo "Downloading: $url"
+            curl -f -L "$url" >> Tool-repo/Ruleset/Ads_SukkaW.list || { echo "Download Failed: $url"; exit 1; }
+            echo "" >> Tool-repo/Ruleset/Ads_SukkaW.list
+        done
 
-on:
-  schedule:
-    - cron: '0 0 * * *'
-  workflow_dispatch:
+        # 2. 格式标准化与清洗 (Source build 逻辑)
+        file="Tool-repo/Ruleset/Ads_SukkaW.list"
+        sed -i '/^\./s/^\./DOMAIN-SUFFIX,/' "$file"
+        sed -i -E '/^\s*$/b; /^\s*[#;]/b; /^DOMAIN,|^DOMAIN-SUFFIX,|^DOMAIN-KEYWORD,|^DOMAIN-WILDCARD,|^IP-CIDR,|^IP-CIDR6,|^IP-ASN,|^GEOIP,|^AND,|^OR,|^NOT,|^URL-REGEX,|^USER-AGENT,|^PROCESS-NAME,|^DEST-PORT,/b; s/^([^#])/DOMAIN,\1/' "$file"
+        sed -i -e '/^\s*[#;]/d' -e '/^$/d' -e 's| //.*||' "$file"
+        # 删除 SukkaW 广告识别行
+        sed -i -e '/DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe/d' \
+               -e '/DOMAIN,th1s_rule5et_1s_m4d3_by_5ukk4w_ruleset.skk.moe/d' \
+               -e '/DOMAIN,this_rule_set_is_made_by_sukkaw.skk.moe/d' \
+               -e '/DOMAIN,7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe/d' "$file"
+        sed -i -e 's/,reject$//' -e 's/, */,/g' "$file"
 
-jobs:
-  update-rules:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+        # 3. 排序与去重 (Source sort 逻辑)
+        sed -i -E '/^IP-CIDR,/!{/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\/[0-9]+/s/^/IP-CIDR,/}' "$file"
+        awk '
+        /^DOMAIN,/         { print "0 " $0; next }
+        /^DOMAIN-SUFFIX,/  { print "1 " $0; next }
+        /^DOMAIN-KEYWORD,/ { print "2 " $0; next }
+        /^IP-CIDR,/        { print "4 " $0; next }
+                           { print "15 " $0; next }
+        ' "$file" | sort -k1,1n -k2,2 | cut -d' ' -f2- > "$file.sorted" && mv "$file.sorted" "$file"
+        awk '!seen[tolower($0)]++' "$file" > temp && mv temp "$file"
 
-      - name: Download and Process Rules
-        run: |
-          mkdir -p Tool/Egern/Rules/
-          
-          # 下载原始文件
-          curl -sSL "https://raw.githubusercontent.com/Repcz/Tool/refs/heads/X/Egern/Rules/Ads_SukkaW.yaml" -o temp_rules.yaml
-          
-          # 使用 sed 处理：
-          # 寻找以 - 开头，后面跟着引号内容的行，并去掉引号
-          # 逻辑：将  - "/内容/"  替换为  - /内容/
-          sed 's/- "\(.*\)"/- \1/' temp_rules.yaml > Tool/Egern/Rules/Ads_SukkaW.yaml
-          
-          rm temp_rules.yaml
+        # 4. 转换为 Egern YAML 格式
+        mkdir -p Tool-repo/Egern/Rules
+        egern_file="Tool-repo/Egern/Rules/Ads_SukkaW.yaml"
+        cp "$file" "$egern_file"
 
-      - name: Commit and Push
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add Tool/Egern/Rules/Ads_SukkaW.yaml
-          if git diff --cached --quiet; then
-            echo "No changes detected."
-          else
-            git commit -m "Update Ads_SukkaW.yaml: Removed quotes from regex set"
-            git push
-          fi
+        # 删除 Egern 不支持的类型
+        sed -i -e '/^USER-AGENT/d' -e '/^PROCESS-NAME/d' -e '/^AND/d' -e '/^OR/d' -e '/^NOT/d' "$egern_file"
+
+        # 注入 YAML 区域头部标记
+        awk '/^DOMAIN,/ && !d_added {print "domain_set:"; d_added=1} {print}' "$egern_file" > tmp && mv tmp "$egern_file"
+        awk '/^DOMAIN-SUFFIX,/ && !ds_added {print "domain_suffix_set:"; ds_added=1} {print}' "$egern_file" > tmp && mv tmp "$egern_file"
+        awk '/^DOMAIN-KEYWORD,/ && !dk_added {print "domain_keyword_set:"; dk_added=1} {print}' "$egern_file" > tmp && mv tmp "$egern_file"
+        awk '/^IP-CIDR,/ && !ip_added {print "ip_cidr_set:"; ip_added=1} {print}' "$egern_file" > tmp && mv tmp "$egern_file"
+
+        # 转换为缩进列表格式并添加统计信息
+        sed -i -E 's/^(DOMAIN|DOMAIN-SUFFIX|DOMAIN-KEYWORD|IP-CIDR),/  - /g' "$egern_file"
+        line_count=$(grep -c '^  - ' "$egern_file")
+        awk -v fname="Ads_SukkaW" 'NR==1 {print "# 规则名称: " fname} {print}' "$egern_file" > tmp && mv tmp "$egern_file"
+        awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$egern_file" > tmp && mv tmp "$egern_file"
+        sed -i '2a\\' "$egern_file"
+
+        echo "Egern rule created at: $egern_file"
