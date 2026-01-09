@@ -1,8 +1,8 @@
-#!name=EmbyRules
-#!desc=Emby分流，请在参数内选择代理策略组。
+#!name=自用Emby分流
+#!desc=自用Emby分流，请在参数内选择代理策略组。
 #!category=分流修正
 #!arguments=Proxy:{{{PROXY}}}
-#!arguments-desc=Proxy:选择需要挂代理观看的 Emby 策略组
+#!arguments-desc=Proxy:选择使用的策略组
 
 [Rule]
 # --- 直连类 (DIRECT) ---
