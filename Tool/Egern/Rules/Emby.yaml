@@ -1,5 +1,5 @@
 # 规则名称: Emby
-# 规则统计: 7
+# 规则统计: 6
 
 no_resolve: true
 domain_set:
@@ -7,6 +7,5 @@ domain_set:
   - emby.bangumi.ca
   - m.mobaiemby.site
   - www.lilyemby.com
-  - www.lilyemby.my
-  - tx.lilyemby.my
-  - aliyun.lilyemby.my
+  - tx.lilyemby.com
+  - aliyun.lilyemby.com
