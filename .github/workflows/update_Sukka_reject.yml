@@ -14,10 +14,10 @@ jobs:
 
       - name: Build Sukka_reject for Egern
         run: |
-          # 1. 精准对齐图片中的路径
+          # 1. 按照你图片中的层级创建目录
           mkdir -p Egern/Tool/Egern/Rules
           
-          # 2. 下载并合并上游规则
+          # 2. 下载上游规则
           urls=(
               "https://ruleset.skk.moe/List/domainset/reject.conf"
               "https://ruleset.skk.moe/List/non_ip/reject.conf"
@@ -29,7 +29,7 @@ jobs:
               echo "" >> "$temp_list"
           done
 
-          # 3. 基础清洗与水印移除
+          # 3. 基础清洗与移除水印
           sed -i '/^\./s/^\./DOMAIN-SUFFIX,/' "$temp_list"
           sed -i -E '/^\s*$/b; /^\s*[#;]/b; /^DOMAIN,|^DOMAIN-SUFFIX,|^DOMAIN-KEYWORD,|^DOMAIN-WILDCARD,|^IP-CIDR,|^IP-CIDR6,|^IP-ASN,|^GEOIP,|^AND,|^OR,|^NOT,|^URL-REGEX,|^USER-AGENT,|^PROCESS-NAME,|^DEST-PORT,/b; s/^([^#])/DOMAIN,\1/' "$temp_list"
           sed -i -e '/^\s*[#;]/d' -e '/^$/d' -e 's| //.*||' -e 's/,reject$//' "$temp_list"
@@ -38,11 +38,11 @@ jobs:
                  -e '/DOMAIN,this_rule_set_is_made_by_sukkaw.skk.moe/d' \
                  -e '/DOMAIN,7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe/d' "$temp_list"
 
-          # 4. 转换 YAML (仅删除 URL-REGEX 引号)
+          # 4. 转换 YAML (精准移除 URL-REGEX 引号)
           target="Egern/Tool/Egern/Rules/Sukka_reject.yaml"
           cp "$temp_list" "$target"
           
-          # 插入 YAML 标签头
+          # 删除不支持类型并添加标签头
           sed -i -e '/^USER-AGENT/d' -e '/^PROCESS-NAME/d' "$target"
           awk '/^DOMAIN,/ && !a {print "domain_set:"; a=1} {print}' "$target" > tmp && mv tmp "$target"
           awk '/^DOMAIN-SUFFIX,/ && !a {print "domain_suffix_set:"; a=1} {print}' "$target" > tmp && mv tmp "$target"
@@ -50,14 +50,14 @@ jobs:
           awk '/^IP-CIDR6,/ && !a {print "ip_cidr6_set:"; a=1} {print}' "$target" > tmp && mv tmp "$target"
           awk '/^URL-REGEX,/ && !a {print "url_regex_set:"; a=1} {print}' "$target" > tmp && mv tmp "$target"
 
-          # 格式化列表 (删掉 URL-REGEX 的引号处理行)
+          # 格式化列表 (注意：此处已删掉为 URL-REGEX 加引号的逻辑)
           sed -i -E 's/^(DOMAIN-WILDCARD,)([^,]+)$/\1"\2"/' "$target"
           sed -i -E 's/^(DOMAIN|DOMAIN-SUFFIX|DOMAIN-KEYWORD|DOMAIN-WILDCARD|DEST-PORT|IP-CIDR|IP-CIDR6|IP-ASN|URL-REGEX|GEOIP),/  - /g' "$target"
           
-          # 【修复点】全局删除 ,no-resolve，让 IP 变干净
+          # 【修复点】彻底删掉所有行末尾的 ,no-resolve，让 IP 变干净
           sed -i 's/,no-resolve//g' "$target"
 
-          # 添加统计
+          # 5. 添加统计头
           count=$(grep -c '^  - ' "$target")
           awk -v c="$count" 'NR==1 {print "# 规则名称: Sukka_reject\n# 规则统计: " c "\n"} {print}' "$target" > tmp && mv tmp "$target"
           rm "$temp_list"
@@ -66,5 +66,7 @@ jobs:
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Action"
-          # 关键：必须要添加整个新增的路径文件夹
+          # 核心修正：必须 git add 这个完整的路径才能在仓库看到文件
           git add Egern/Tool/Egern/Rules/Sukka_reject.yaml
+          git commit -m "Update Sukka_reject $(date +'%Y-%m-%d')" || exit 0
+          git push
