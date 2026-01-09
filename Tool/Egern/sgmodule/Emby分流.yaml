@@ -1,0 +1,11 @@
+#!name=Emby分流
+#!desc=针对指定的 7 个 Emby 域名进行精准分流。
+
+[Rule]
+DOMAIN,link00.okemby.org,{{{PROXY}}}
+DOMAIN,emby.bangumi.ca,{{{PROXY}}}
+DOMAIN,m.mobaiemby.site,{{{PROXY}}}
+DOMAIN,www.lilyemby.com,{{{PROXY}}}
+DOMAIN,tx.lilyemby.com,{{{PROXY}}}
+DOMAIN,aliyun.lilyemby.com,{{{PROXY}}}
+DOMAIN,cdn.lilyemby.com,{{{PROXY}}}
