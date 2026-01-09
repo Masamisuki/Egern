@@ -1,71 +1,54 @@
-name: Update Sukka Reject Rules
+- name: Build Sukka_reject for Egern
+      run: |
+        # 1. 按照图片路径创建目录
+        mkdir -p Egern/Tool/Egern/Rules
+        
+        # 2. 下载并合并 SukkaW 上游规则
+        urls=(
+            "https://ruleset.skk.moe/List/domainset/reject.conf"
+            "https://ruleset.skk.moe/List/non_ip/reject.conf"
+        )
+        temp_list="temp_sukka.list"
+        > "$temp_list"
+        for url in "${urls[@]}"; do
+            curl -f -L "$url" >> "$temp_list"
+            echo "" >> "$temp_list"
+        done
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 0 * * *" # 每天 UTC 0点自动运行
+        # 3. 基础清洗 (Source build 逻辑)
+        sed -i '/^\./s/^\./DOMAIN-SUFFIX,/' "$temp_list"
+        sed -i -E '/^\s*$/b; /^\s*[#;]/b; /^DOMAIN,|^DOMAIN-SUFFIX,|^DOMAIN-KEYWORD,|^DOMAIN-WILDCARD,|^IP-CIDR,|^IP-CIDR6,|^IP-ASN,|^GEOIP,|^AND,|^OR,|^NOT,|^URL-REGEX,|^USER-AGENT,|^PROCESS-NAME,|^DEST-PORT,/b; s/^([^#])/DOMAIN,\1/' "$temp_list"
+        sed -i -e '/^\s*[#;]/d' -e '/^$/d' -e 's| //.*||' -e 's/,reject$//' "$temp_list"
+        
+        # 删除水印域名
+        sed -i -e '/DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe/d' \
+               -e '/DOMAIN,th1s_rule5et_1s_m4d3_by_5ukk4w_ruleset.skk.moe/d' \
+               -e '/DOMAIN,this_rule_set_is_made_by_sukkaw.skk.moe/d' \
+               -e '/DOMAIN,7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe/d' "$temp_list"
 
-jobs:
-  Update:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+        # 4. 转换为 Egern YAML (Sukka_reject.yaml)
+        target="Egern/Tool/Egern/Rules/Sukka_reject.yaml"
+        cp "$temp_list" "$target"
+        
+        # 第一阶段：添加 YAML 节点标签
+        sed -i -e '/^USER-AGENT/d' -e '/^PROCESS-NAME/d' "$target"
+        awk '/^DOMAIN,/ && !a {print "domain_set:"; a=1} {print}' "$target" > tmp && mv tmp "$target"
+        awk '/^DOMAIN-SUFFIX,/ && !a {print "domain_suffix_set:"; a=1} {print}' "$target" > tmp && mv tmp "$target"
+        awk '/^DOMAIN-WILDCARD,/ && !a {print "domain_wildcard_set:"; a=1} {print}' "$target" > tmp && mv tmp "$target"
+        awk '/^IP-CIDR6,/ && !a {print "ip_cidr6_set:"; a=1} {print}' "$target" > tmp && mv tmp "$target"
+        awk '/^URL-REGEX,/ && !a {print "url_regex_set:"; a=1} {print}' "$target" > tmp && mv tmp "$target"
 
-      - name: Build Sukka_reject for Egern
-        run: |
-          # 1. 创建目标目录 (确保路径正确)
-          mkdir -p Egern/Rules
-          
-          # 2. 下载并合并 SukkaW 上游 Reject 规则
-          urls=(
-              "https://ruleset.skk.moe/List/domainset/reject.conf"
-              "https://ruleset.skk.moe/List/non_ip/reject.conf"
-          )
-          temp_list="Sukka_reject.list"
-          > "$temp_list"
-          for url in "${urls[@]}"; do
-              echo "Downloading: $url"
-              curl -f -L "$url" >> "$temp_list" || { echo "Download Failed"; exit 1; }
-              echo "" >> "$temp_list"
-          done
+        # 第二阶段：格式化列表并清理 no-resolve
+        # 【关键】这里保留了对 DOMAIN-WILDCARD 加引号，但去掉了对 URL-REGEX 加引号的行
+        sed -i -E 's/^(DOMAIN-WILDCARD,)([^,]+)$/\1"\2"/' "$target"
+        
+        # 统一转换前缀为 "  - "
+        sed -i -E 's/^(DOMAIN|DOMAIN-SUFFIX|DOMAIN-KEYWORD|DOMAIN-WILDCARD|DEST-PORT|IP-CIDR|IP-CIDR6|IP-ASN|URL-REGEX|GEOIP),/  - /g' "$target"
+        
+        # 彻底删除所有行的 ,no-resolve 后缀 (解决你图片 image_0c9129.png 的问题)
+        sed -i 's/,no-resolve//g' "$target"
 
-          # 3. 标准化处理 (清洗水印与格式修正)
-          # 转换前缀
-          sed -i '/^\./s/^\./DOMAIN-SUFFIX,/' "$temp_list"
-          sed -i -E '/^\s*$/b; /^\s*[#;]/b; /^DOMAIN,|^DOMAIN-SUFFIX,|^DOMAIN-KEYWORD,|^DOMAIN-WILDCARD,|^IP-CIDR,|^IP-CIDR6,|^IP-ASN,|^GEOIP,|^AND,|^OR,|^NOT,|^URL-REGEX,|^USER-AGENT,|^PROCESS-NAME,|^DEST-PORT,/b; s/^([^#])/DOMAIN,\1/' "$temp_list"
-          
-          # 删除注释和水印
-          sed -i -e '/^\s*[#;]/d' -e '/^$/d' -e 's| //.*||' -e 's/,reject$//' "$temp_list"
-          sed -i -e '/DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe/d' \
-                 -e '/DOMAIN,th1s_rule5et_1s_m4d3_by_5ukk4w_ruleset.skk.moe/d' \
-                 -e '/DOMAIN,this_rule_set_is_made_by_sukkaw.skk.moe/d' \
-                 -e '/DOMAIN,7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe/d' "$temp_list"
-
-          # 4. 转换为 Egern YAML 格式
-          target_yaml="Egern/Rules/Sukka_reject.yaml"
-          cp "$temp_list" "$target_yaml"
-          
-          # 移除 Egern 不支持的类型
-          sed -i -e '/^USER-AGENT/d' -e '/^PROCESS-NAME/d' "$target_yaml"
-          
-          # 插入 YAML 节点头部
-          awk '/^DOMAIN,/ && !a {print "domain_set:"; a=1} {print}' "$target_yaml" > tmp && mv tmp "$target_yaml"
-          awk '/^DOMAIN-SUFFIX,/ && !a {print "domain_suffix_set:"; a=1} {print}' "$target_yaml" > tmp && mv tmp "$target_yaml"
-          awk '/^URL-REGEX,/ && !a {print "url_regex_set:"; a=1} {print}' "$target_yaml" > tmp && mv tmp "$target_yaml"
-
-          # 【核心修复】转换为 YAML 列表格式，确保正则不加引号
-          sed -i -E 's/^(DOMAIN|DOMAIN-SUFFIX|DOMAIN-KEYWORD|DOMAIN-WILDCARD|DEST-PORT|IP-CIDR|IP-CIDR6|IP-ASN|URL-REGEX|GEOIP),/  - /g' "$target_yaml"
-
-          # 5. 添加统计头信息
-          line_count=$(grep -c '^  - ' "$target_yaml")
-          awk -v count="$line_count" 'NR==1 {print "# 规则名称: Sukka_reject\n# 规则统计: " count "\n"} {print}' "$target_yaml" > tmp && mv tmp "$target_yaml"
-          rm "$temp_list"
-
-      - name: Push Changes
-        run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Action"
-          git add Egern/Rules/Sukka_reject.yaml
-          git commit -m "Update Sukka_reject rules $(date +'%Y-%m-%d %H:%M:%S')" || exit 0
-          git push
+        # 5. 添加文件头统计信息
+        count=$(grep -c '^  - ' "$target")
+        awk -v c="$count" 'NR==1 {print "# 规则名称: Sukka_reject\n# 规则统计: " c "\n"} {print}' "$target" > tmp && mv tmp "$target"
+        rm "$temp_list"
