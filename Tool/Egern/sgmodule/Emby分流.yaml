@@ -1,11 +1,17 @@
-#!name=Emby分流
-#!desc=针对指定的 7 个 Emby 域名进行精准分流。
+#!name=Emby 选路补丁
+#!desc=针对指定的 7 个 Emby 服务器进行分流。除 CDN 外，请在参数中选择对应的策略组。
+#!category=分流修正
+#!arguments=Proxy:{{{PROXY}}}
+#!arguments-desc=Proxy:选择 Emby 流量需要走的策略组
 
 [Rule]
-DOMAIN,link00.okemby.org,{{{PROXY}}}
-DOMAIN,emby.bangumi.ca,{{{PROXY}}}
-DOMAIN,m.mobaiemby.site,{{{PROXY}}}
-DOMAIN,www.lilyemby.com,{{{PROXY}}}
-DOMAIN,tx.lilyemby.com,{{{PROXY}}}
-DOMAIN,aliyun.lilyemby.com,{{{PROXY}}}
-DOMAIN,cdn.lilyemby.com,{{{PROXY}}}
+# 指定为直连的域名
+DOMAIN,cdn.lilyemby.com,DIRECT
+
+# 需通过参数选择策略组的域名
+DOMAIN,link00.okemby.org,{{{Proxy}}}
+DOMAIN,emby.bangumi.ca,{{{Proxy}}}
+DOMAIN,m.mobaiemby.site,{{{Proxy}}}
+DOMAIN,www.lilyemby.com,{{{Proxy}}}
+DOMAIN,tx.lilyemby.com,{{{Proxy}}}
+DOMAIN,aliyun.lilyemby.com,{{{Proxy}}}
