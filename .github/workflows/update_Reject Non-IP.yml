@@ -2,9 +2,8 @@ name: Sync Rules
 
 on:
   schedule:
-    # 每天凌晨 0 点同步一次 (UTC时间)
     - cron: '0 0 * * *'
-  workflow_dispatch: # 允许手动触发执行
+  workflow_dispatch:
 
 jobs:
   sync:
@@ -15,9 +14,10 @@ jobs:
 
       - name: Download and Process Rule
         run: |
-          # 设定保存路径（如果文件夹不存在则创建）
+          # 设定保存路径
           SAVE_DIR="Tool/Egern/Rules"
-          FILE_NAME="reject.conf"
+          # 文件名已修改为 Reject_Non-IP
+          FILE_NAME="Reject_Non-IP"
           DEST_PATH="$SAVE_DIR/$FILE_NAME"
           
           mkdir -p "$SAVE_DIR"
@@ -40,10 +40,10 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           
-          # 检查是否有文件更改
+          # 检查是否有文件更新
           if [ -n "$(git status --porcelain)" ]; then
             git add .
-            git commit -m "chore: sync reject rules from upstream $(date +'%Y-%m-%d')"
+            git commit -m "chore: sync Reject_Non-IP rules"
             git push
           else
             echo "No changes detected, skipping commit."
