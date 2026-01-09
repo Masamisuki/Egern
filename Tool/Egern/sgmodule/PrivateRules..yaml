@@ -1,4 +1,4 @@
-#!name=个人私有分流补丁
+#!name=个人分流模块
 #!desc=包含Emby分流及QQ音乐统计域名直连优化。请在参数内选择代理策略组。
 #!category=分流修正
 #!arguments=Proxy:{{{PROXY}}}
