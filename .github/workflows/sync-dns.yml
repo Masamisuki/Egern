@@ -14,11 +14,11 @@ jobs:
 
       - name: Download and Clean DNS Rules
         run: |
-          # 创建目标目录
+          # 1. 创建目标目录
           TARGET_DIR="Tool/Egern/Rules"
           mkdir -p "$TARGET_DIR"
 
-          # 定义下载列表
+          # 2. 定义下载列表
           urls=(
             "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/alibaba.conf"
             "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/tencent.conf"
@@ -27,18 +27,18 @@ jobs:
             "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/baidu.conf"
           )
 
-          # 循环下载并即时清理
+          # 3. 循环下载并即时清理
           for url in "${urls[@]}"; do
             raw_name=$(basename "$url")
-            # 将首字母转换为大写
+            # 将文件名首字母转换为大写
             filename="${raw_name^}"
             
-            echo "Processing $raw_name -> $filename..."
+            echo "Processing: $raw_name -> $filename"
             
             # 下载文件
             curl -L "$url" -o "$TARGET_DIR/$filename"
 
-            # 执行删除指定域名的操作
+            # 执行删除指定域名的操作（水印清理）
             sed -i -e '/this_ruleset_is_made_by_sukkaw.ruleset.skk.moe/d' "$TARGET_DIR/$filename"
             sed -i -e '/th1s_rule5et_1s_m4d3_by_5ukk4w_ruleset.skk.moe/d' "$TARGET_DIR/$filename"
             sed -i -e '/this_rule_set_is_made_by_sukkaw.skk.moe/d' "$TARGET_DIR/$filename"
@@ -51,10 +51,10 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add Tool/Egern/Rules/
           
-          # 检查是否有文件变动并提交
-          if [[ -n $(git status -s) ]]; then
+          # 使用 git diff-index 检测变化，这是在 CI 中最稳定的方式
+          if ! git diff-index --quiet HEAD; then
             git commit -m "Update(DNS): Sync SukkaW DNS mapping $(date +'%Y-%m-%d %H:%M:%S')"
             git push
           else
-            echo "No changes detected."
+            echo "No changes detected, skipping push."
           fi
