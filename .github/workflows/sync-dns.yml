@@ -21,7 +21,7 @@ jobs:
           curl -L "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/alibaba.conf" -o "Tool/Egern/Rules/Alibaba.conf"
           curl -L "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/tencent.conf" -o "Tool/Egern/Rules/Tencent.conf"
           curl -L "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/bilibili.conf" -o "Tool/Egern/Rules/Bilibili.conf"
-          curl -L "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/bytedance.conf" -o "Tool/Egern/Rules/Bytedance.conf"
+          curl -L "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/bytedance.conf" -o "Tool/Egern/Rules/ByteDance.conf"
           curl -L "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/baidu.conf" -o "Tool/Egern/Rules/Baidu.conf"
 
           # 2. 清理那几行指定域名
