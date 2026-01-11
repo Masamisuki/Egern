@@ -29,9 +29,12 @@ jobs:
 
           # 循环下载并即时清理
           for url in "${urls[@]}"; do
-            filename=$(basename "$url")
-            echo "Processing $filename..."
-            
+            raw_name=$(basename "$url")
+            # 将首字母转换为大写
+            filename="${raw_name^}"
+            
+            echo "Processing $raw_name -> $filename..."
+            
             # 下载文件
             curl -L "$url" -o "$TARGET_DIR/$filename"
 
@@ -47,7 +50,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add Tool/Egern/Rules/
-          
+          
           # 检查是否有文件变动并提交
           if [[ -n $(git status -s) ]]; then
             git commit -m "Update(DNS): Sync SukkaW DNS mapping $(date +'%Y-%m-%d %H:%M:%S')"
