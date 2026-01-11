@@ -12,49 +12,29 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Download and Clean DNS Rules
+      - name: Download and Clean Rules
         run: |
-          # 1. 创建目标目录
-          TARGET_DIR="Tool/Egern/Rules"
-          mkdir -p "$TARGET_DIR"
+          # 创建目录
+          mkdir -p Tool/Egern/Rules
 
-          # 2. 定义下载列表
-          urls=(
-            "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/alibaba.conf"
-            "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/tencent.conf"
-            "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/bilibili.conf"
-            "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/bytedance.conf"
-            "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/baidu.conf"
-          )
+          # 1. 明确下载并重命名（首字母大写）
+          curl -L "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/alibaba.conf" -o "Tool/Egern/Rules/Alibaba.conf"
+          curl -L "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/tencent.conf" -o "Tool/Egern/Rules/Tencent.conf"
+          curl -L "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/bilibili.conf" -o "Tool/Egern/Rules/Bilibili.conf"
+          curl -L "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/bytedance.conf" -o "Tool/Egern/Rules/Bytedance.conf"
+          curl -L "https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/baidu.conf" -o "Tool/Egern/Rules/Baidu.conf"
 
-          # 3. 循环下载并即时清理
-          for url in "${urls[@]}"; do
-            raw_name=$(basename "$url")
-            # 将文件名首字母转换为大写
-            filename="${raw_name^}"
-            
-            echo "Processing: $raw_name -> $filename"
-            
-            # 下载文件
-            curl -L "$url" -o "$TARGET_DIR/$filename"
-
-            # 执行删除指定域名的操作（水印清理）
-            sed -i -e '/this_ruleset_is_made_by_sukkaw.ruleset.skk.moe/d' "$TARGET_DIR/$filename"
-            sed -i -e '/th1s_rule5et_1s_m4d3_by_5ukk4w_ruleset.skk.moe/d' "$TARGET_DIR/$filename"
-            sed -i -e '/this_rule_set_is_made_by_sukkaw.skk.moe/d' "$TARGET_DIR/$filename"
-            sed -i -e '/7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe/d' "$TARGET_DIR/$filename"
+          # 2. 对该目录下所有文件执行清理
+          for file in Tool/Egern/Rules/*.conf; do
+            sed -i -e '/this_ruleset_is_made_by_sukkaw.ruleset.skk.moe/d' "$file"
+            sed -i -e '/th1s_rule5et_1s_m4d3_by_5ukk4w_ruleset.skk.moe/d' "$file"
+            sed -i -e '/this_rule_set_is_made_by_sukkaw.skk.moe/d' "$file"
+            sed -i -e '/7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe/d' "$file"
           done
 
       - name: Push Update
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add Tool/Egern/Rules/
-          
-          # 使用 git diff-index 检测变化，这是在 CI 中最稳定的方式
-          if ! git diff-index --quiet HEAD; then
-            git commit -m "Update(DNS): Sync SukkaW DNS mapping $(date +'%Y-%m-%d %H:%M:%S')"
-            git push
-          else
-            echo "No changes detected, skipping push."
-          fi
+          git add Tool/Egern/Rules/*.conf
+          git commit -m "Update DNS Rules $(date +'%Y-%m-%d %H:%M:%S')" && git push || echo "No changes"
