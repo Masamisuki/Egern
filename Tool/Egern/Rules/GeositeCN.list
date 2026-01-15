@@ -1,6 +1,6 @@
 # 规则名称: GeositeCN
-# 规则统计: 4781
-# 最后更新: 2026-01-14 00:56:28 (GMT)
+# 规则统计: 4782
+# 最后更新: 2026-01-15 00:52:50 (GMT)
 
 
 DOMAIN-KEYWORD,-aweme-
@@ -2188,6 +2188,7 @@ DOMAIN-SUFFIX,ibdxiguastatic.com
 DOMAIN-SUFFIX,ibdxiguavod.com
 DOMAIN-SUFFIX,ibidian.com
 DOMAIN-SUFFIX,ibuychem.com
+DOMAIN-SUFFIX,ibytedapm.com
 DOMAIN-SUFFIX,icbc
 DOMAIN-SUFFIX,icbcpanama.com
 DOMAIN-SUFFIX,iccvlog.com
